@@ -1,0 +1,66 @@
+{
+  "scene_id": "garden",
+  "scene_label": "Garden",
+  "scene_type": "outdoor_semantic",
+  "dataset": "Mip-NeRF 360",
+  "dataset_page": "https://jonbarron.info/mipnerf360/",
+  "raw_download_url": "https://storage.googleapis.com/gresearch/refraw360/360_v2.zip",
+  "pretrained_model_source": "Graphdeco official pretrained model release",
+  "model_release_page": "https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/",
+  "model_download_url": "https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/datasets/pretrained/models.zip",
+  "model_license_page": "https://github.com/graphdeco-inria/gaussian-splatting/blob/main/LICENSE.md",
+  "license_status": "Research delivery only; retain upstream attribution and consult dataset/model terms before redistribution or commercial use.",
+  "download_archives": {
+    "raw": {
+      "filename": "360_v2.zip",
+      "bytes": 12535427936
+    },
+    "model": {
+      "filename": "models.zip",
+      "bytes": 14660630999
+    }
+  },
+  "original_images_directory": "images",
+  "colmap_directory": "sparse/0",
+  "registered_cameras": 185,
+  "model_camera_alignment_max_position_error": 4.884981308350689e-15,
+  "split": {
+    "all": 185,
+    "train": 161,
+    "test": 24
+  },
+  "pretrained_model": {
+    "iteration": 30000,
+    "ply": "point_cloud/iteration_30000/point_cloud.ply",
+    "gaussian_count": 5834784,
+    "sh_degree": 3,
+    "training_status": "official pretrained model reused; no local training performed"
+  },
+  "delivery_metadata": {
+    "photo_count": 185,
+    "camera_count": 185,
+    "scene_bytes": 3548708849,
+    "preview_files": [
+      "previews/preview_01.jpg",
+      "previews/preview_02.jpg",
+      "previews/preview_03.jpg",
+      "previews/preview_04.jpg"
+    ],
+    "preview_selection": "four evenly spaced images selected only from train.txt; test images were not used",
+    "known_limitations": [
+      "Pretrained public release; the exact upstream training command may not have been provided.",
+      "Inspect boundary floaters, reflective/transparent surfaces and thin geometry before freezing experimental ROIs."
+    ],
+    "suggested_instance_rois": [
+      "????",
+      "??",
+      "?????"
+    ],
+    "reference_training_command": "python train.py -s . -m <output_dir> --eval --iterations 30000",
+    "qa_scope": "automated structural validation; suggested ROIs require project-team visual confirmation"
+  },
+  "delivery_original_model_metadata": {
+    "cfg_args": "restored from bundled model_release/cfg_args",
+    "input.ply": "restored from bundled model_release/input.ply"
+  }
+}

@@ -20,3 +20,4 @@
 
 # Generated build artifacts
 *.unitypackage
+.vsconfig
