@@ -14,8 +14,5 @@
 
 - [项目计划书](Docs/计划与分工/民族建筑景区3DGS项目计划书_三人小组完善版.docx)
 - [三人任务表](Docs/计划与分工/三人任务表_前两周Garden复建与增强.md)
-- [Garden 原型搭建全流程](Docs/Garden原型搭建全流程.md)
-- [从零复现 Garden 原型](Docs/从零复现Garden原型.md)
-- [团队文件规范与协作说明](Docs/团队文件规范与协作说明.md)
 
 Garden 数据来自 [VR27 3DGS DataSet](https://huggingface.co/datasets/warmstones/VR27_3DGS_DataSet/tree/main/scenes/garden)，其元数据指向 [Mip-NeRF 360 Garden](https://jonbarron.info/mipnerf360/) 和 [Graphdeco 官方预训练模型](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)。模型仅用于研究与课程演示；使用和再分发时应遵守[上游许可](Docs/GaussianSplatting-LICENSE.md)。渲染插件的 MIT 许可证保存在 `Packages/org.nesnausk.gaussian-splatting/LICENSE.md`。中文字体换为 [Noto Sans SC](https://github.com/notofonts/noto-cjk)，许可证见[字体许可文件](Docs/NotoSansSC-OFL.txt)。
