@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 原型零件 3｜三维景点标签   —— 归成员 C
+/// 原型零件 3｜三维景点标签   —— 归成员 B
 /// 挂到 POIManager 所在的同一个物体上。
 /// 运行时会为每个景点自动生成一个始终朝向相机的文字标签。
 ///

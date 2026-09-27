@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 原型零件 2｜景点数据与当前目标   —— 归成员 C
+/// 原型零件 2｜景点数据与当前目标   —— 归成员 B
 /// 挂到一个空物体上，建议命名 POIManager。
 ///
 /// 景点列表在编辑器里就能编辑：如果 Inspector 里 Pois 是空的，
