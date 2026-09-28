@@ -21,3 +21,6 @@
 # Generated build artifacts
 *.unitypackage
 .vsconfig
+
+# Microsoft Word temporary lock files
+~$*.docx
