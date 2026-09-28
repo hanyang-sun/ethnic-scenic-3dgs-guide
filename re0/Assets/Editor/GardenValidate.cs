@@ -88,11 +88,22 @@ public static class GardenValidate
             start.Invoke(miniMap, null);
             var canvas = GameObject.Find("TourMiniMapCanvas");
             Require(canvas != null, "mini map canvas");
-            var map = canvas.transform.Find("NavigationWindow/MapArea");
+            var panel = canvas.transform.Find("NavigationWindow");
+            var map = panel?.Find("MapArea");
             Require(map != null, "mini map area");
             Require(map.Find("WalkableArea") != null, "mini map displays the walkable area");
+            float previousLegendY = float.PositiveInfinity;
             foreach (POI poi in pois.pois)
+            {
                 Require(map.Find("POI_" + poi.id) != null, "mini map marker for " + poi.name);
+                Require(map.Find("Name_" + poi.id) == null, "no overlapping POI name inside map");
+                var legend = panel.Find("Legend_" + poi.id)?.GetComponent<RectTransform>();
+                Require(legend != null && legend.Find("Name")?.GetComponent<TextMeshProUGUI>()?.text == poi.name,
+                    "readable POI legend for " + poi.name);
+                Require(previousLegendY - legend.anchoredPosition.y >= legend.sizeDelta.y,
+                    "POI legend rows do not overlap");
+                previousLegendY = legend.anchoredPosition.y;
+            }
             var arrow = map.Find("PlayerArrow").GetComponent<RectTransform>();
 
             camera.transform.rotation = Quaternion.identity;

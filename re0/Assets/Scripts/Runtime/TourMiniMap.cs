@@ -22,7 +22,9 @@ public class TourMiniMap : MonoBehaviour
     public float bottomMargin = 24f;
 
     readonly List<Image> poiMarkers = new List<Image>();
+    readonly List<Image> legendRows = new List<Image>();
     GameObject canvasObject;
+    RectTransform panelRect;
     RectTransform mapRect;
     RectTransform playerArrow;
     RectTransform playerArrowShadow;
@@ -33,6 +35,8 @@ public class TourMiniMap : MonoBehaviour
     Vector2 worldCenter;
     float pixelsPerUnit;
     float usableHalfSize;
+    float legendHeight;
+    int visiblePoiCount;
 
     void Start()
     {
@@ -46,11 +50,14 @@ public class TourMiniMap : MonoBehaviour
             return;
         }
 
+        visiblePoiCount = poiManager.pois == null ? 0 : poiManager.pois.FindAll(poi => poi != null).Count;
+        legendHeight = visiblePoiCount == 0 ? 0f : visiblePoiCount * 26f + 8f;
         CalculateBounds();
         BuildWindow();
         DrawWalkableFloor();
         DrawRoads();
         DrawPOIs();
+        BuildLegend();
         BuildPlayerArrow();
         RefreshPlayer();
         RefreshSelection();
@@ -150,28 +157,28 @@ public class TourMiniMap : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight = 0.5f;
 
-        RectTransform panel = CreateRect("NavigationWindow", canvasObject.transform);
-        panel.anchorMin = panel.anchorMax = new Vector2(1f, 0f);
-        panel.pivot = new Vector2(1f, 0f);
-        panel.sizeDelta = new Vector2(mapSize + 32f, mapSize + 82f);
-        panel.anchoredPosition = new Vector2(-rightMargin, bottomMargin);
-        AddImage(panel.gameObject, new Color(0.06f, 0.11f, 0.17f, 0.94f));
+        panelRect = CreateRect("NavigationWindow", canvasObject.transform);
+        panelRect.anchorMin = panelRect.anchorMax = new Vector2(1f, 0f);
+        panelRect.pivot = new Vector2(1f, 0f);
+        panelRect.sizeDelta = new Vector2(mapSize + 32f, mapSize + 82f + legendHeight);
+        panelRect.anchoredPosition = new Vector2(-rightMargin, bottomMargin);
+        AddImage(panelRect.gameObject, new Color(0.06f, 0.11f, 0.17f, 0.94f));
 
-        RectTransform titleRect = CreateRect("Title", panel);
+        RectTransform titleRect = CreateRect("Title", panelRect);
         titleRect.anchorMin = titleRect.anchorMax = new Vector2(0.5f, 1f);
         titleRect.sizeDelta = new Vector2(mapSize, 32f);
         titleRect.anchoredPosition = new Vector2(0f, -21f);
         CreateText(titleRect.gameObject, "导览地图", 20f, Color.white);
 
-        mapRect = CreateRect("MapArea", panel);
+        mapRect = CreateRect("MapArea", panelRect);
         mapRect.anchorMin = mapRect.anchorMax = new Vector2(0.5f, 0f);
         mapRect.pivot = new Vector2(0.5f, 0f);
         mapRect.sizeDelta = Vector2.one * mapSize;
-        mapRect.anchoredPosition = new Vector2(0f, 28f);
+        mapRect.anchoredPosition = new Vector2(0f, 28f + legendHeight);
         AddImage(mapRect.gameObject, new Color(0.13f, 0.20f, 0.28f, 0.98f));
         mapRect.gameObject.AddComponent<RectMask2D>();
 
-        RectTransform hintRect = CreateRect("MapDirection", panel);
+        RectTransform hintRect = CreateRect("MapDirection", panelRect);
         hintRect.anchorMin = hintRect.anchorMax = new Vector2(0.5f, 0f);
         hintRect.sizeDelta = new Vector2(mapSize, 22f);
         hintRect.anchoredPosition = new Vector2(0f, 13f);
@@ -201,26 +208,55 @@ public class TourMiniMap : MonoBehaviour
     void DrawPOIs()
     {
         if (poiManager.pois == null) return;
-        foreach (POI poi in poiManager.pois)
+        for (int i = 0; i < poiManager.pois.Count; i++)
         {
+            POI poi = poiManager.pois[i];
             if (poi == null) { poiMarkers.Add(null); continue; }
             Vector2 point = MapPosition(poi.position);
             RectTransform marker = CreateRect("POI_" + poi.id, mapRect);
             marker.anchorMin = marker.anchorMax = new Vector2(0.5f, 0.5f);
-            marker.sizeDelta = new Vector2(14f, 14f);
+            marker.sizeDelta = new Vector2(11f, 11f);
             marker.anchoredPosition = point;
             marker.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            poiMarkers.Add(AddImage(marker.gameObject, new Color(1f, 0.77f, 0.30f)));
-
-            RectTransform label = CreateRect("Name_" + poi.id, mapRect);
-            label.anchorMin = label.anchorMax = new Vector2(0.5f, 0.5f);
-            label.sizeDelta = new Vector2(120f, 22f);
-            label.anchoredPosition = new Vector2(
-                Mathf.Clamp(point.x, -mapSize * 0.5f + 60f, mapSize * 0.5f - 60f),
-                Mathf.Clamp(point.y + 19f, -mapSize * 0.5f + 12f, mapSize * 0.5f - 12f));
-            CreateText(label.gameObject, poi.name, 15f, Color.white);
+            poiMarkers.Add(AddImage(marker.gameObject, PoiColor(i)));
         }
     }
+
+    void BuildLegend()
+    {
+        if (poiManager.pois == null) return;
+        int rowIndex = 0;
+        for (int i = 0; i < poiManager.pois.Count; i++)
+        {
+            POI poi = poiManager.pois[i];
+            if (poi == null) { legendRows.Add(null); continue; }
+            RectTransform row = CreateRect("Legend_" + poi.id, panelRect);
+            row.anchorMin = row.anchorMax = new Vector2(0.5f, 0f);
+            row.sizeDelta = new Vector2(mapSize, 24f);
+            row.anchoredPosition = new Vector2(0f, 28f + (visiblePoiCount - rowIndex - 0.5f) * 26f);
+            legendRows.Add(AddImage(row.gameObject, new Color(0.13f, 0.20f, 0.28f, 0.8f)));
+
+            RectTransform badge = CreateRect("Number", row);
+            badge.anchorMin = badge.anchorMax = new Vector2(0.5f, 0.5f);
+            badge.sizeDelta = new Vector2(20f, 20f);
+            badge.anchoredPosition = new Vector2(-mapSize * 0.5f + 14f, 0f);
+            AddImage(badge.gameObject, PoiColor(i));
+            RectTransform numberText = CreateRect("Text", badge);
+            numberText.sizeDelta = badge.sizeDelta;
+            CreateText(numberText.gameObject, (i + 1).ToString(), 13f, new Color(0.04f, 0.08f, 0.12f));
+
+            RectTransform name = CreateRect("Name", row);
+            name.anchorMin = name.anchorMax = new Vector2(0.5f, 0.5f);
+            name.pivot = new Vector2(0f, 0.5f);
+            name.sizeDelta = new Vector2(mapSize - 38f, 22f);
+            name.anchoredPosition = new Vector2(-mapSize * 0.5f + 30f, 0f);
+            CreateText(name.gameObject, poi.name, 15f, Color.white).alignment = TextAlignmentOptions.Left;
+            rowIndex++;
+        }
+    }
+
+    static Color PoiColor(int index)
+        => Color.HSVToRGB(Mathf.Repeat(0.11f + index * 0.37f, 1f), 0.72f, 1f);
 
     void BuildPlayerArrow()
     {
@@ -275,8 +311,12 @@ public class TourMiniMap : MonoBehaviour
             Image marker = poiMarkers[i];
             if (marker == null) continue;
             bool selected = i == POIManager.CurrentIndex;
-            marker.color = selected ? new Color(1f, 0.94f, 0.23f) : new Color(1f, 0.60f, 0.26f);
-            marker.rectTransform.sizeDelta = selected ? new Vector2(19f, 19f) : new Vector2(14f, 14f);
+            marker.color = selected ? Color.Lerp(PoiColor(i), Color.white, 0.35f) : PoiColor(i);
+            marker.rectTransform.sizeDelta = selected ? new Vector2(17f, 17f) : new Vector2(11f, 11f);
+            if (i < legendRows.Count && legendRows[i] != null)
+                legendRows[i].color = selected
+                    ? new Color(0.27f, 0.40f, 0.48f, 0.95f)
+                    : new Color(0.13f, 0.20f, 0.28f, 0.8f);
         }
     }
 

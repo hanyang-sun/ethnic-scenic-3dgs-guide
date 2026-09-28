@@ -6,7 +6,7 @@
 
 1. 安装 Git LFS，并运行一次 `git lfs install`。克隆本仓库后，在仓库目录运行 `git lfs pull`，取得 Garden 原始 PLY、转换后的 `.bytes` 和中文字体。GitHub 上的 LFS 指针文本不能直接当作模型文件使用。
 2. 在 Unity Hub 中安装 **Unity Editor 6000.3.24f1**，然后把本 `re0` 文件夹添加为项目。工程使用 URP 17.3.0；首次打开时 Unity 会导入资源和解析依赖，可能需要联网。
-3. 打开 `Assets/Scenes/GardenPrototype.unity`，点击 Play。按 `1`、`2`、`3` 选择景点，`0` 取消；`WASD` 移动，按住鼠标右键转向，`Shift` 加速。右下角小地图显示道路、景点和角色朝向；到达后用 `Esc` 或弹窗右上角的 `×` 关闭提示。
+3. 打开 `Assets/Scenes/GardenPrototype.unity`，点击 Play。按 `1`、`2`、`3` 选择景点，`0` 取消；`WASD` 移动，按住鼠标右键转向，`Shift` 加速。右下角小地图显示道路、景点标记和角色朝向，景点名称按标记颜色列在地图下方；到达后用 `Esc` 或弹窗右上角的 `×` 关闭提示。
 
 场景里以一块覆盖 **整个 3DGS 模型包围盒** 的隐形地板承托漫游角色，桌子使用一个圆柱形代理碰撞体；原先的窄步道和内外圈墙已移除。要改变可走范围，在 Hierarchy 中找到 `Garden Tour/Walkable floor and table obstacle/Walkable floor (resize Box Collider in Inspector)`，调整它的 `Box Collider > Size`（X、Z）；小地图会读取地板范围。3DGS 包围盒包含场景外围散点，地板高度也是统一的，因此部分位置可能没有可靠的地面画面；现有路线引导仍沿 28 个路点形成的环线。
 
