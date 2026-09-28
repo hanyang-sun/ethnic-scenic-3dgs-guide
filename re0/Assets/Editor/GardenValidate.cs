@@ -33,7 +33,7 @@ public static class GardenValidate
         Require(floor != null && floor.enabled && floor.size.x > 0f && floor.size.z > 0f, "walkable floor");
         Require(table != null && table.enabled && table.convex && table.sharedMesh != null, "single round table obstacle");
         Require(colliderRoot.GetComponentsInChildren<Collider>().Length == 2, "only floor and table colliders");
-        Require(miniMap.walkableFloor == floor, "mini map uses the walkable floor bounds");
+        Require(miniMap.walkableFloor == floor, "mini map fallback floor reference");
         Vector3 modelMin = splat.m_Asset.boundsMin, modelMax = splat.m_Asset.boundsMax;
         for (int x = 0; x < 2; x++)
         for (int y = 0; y < 2; y++)
@@ -91,7 +91,7 @@ public static class GardenValidate
             var panel = canvas.transform.Find("NavigationWindow");
             var map = panel?.Find("MapArea");
             Require(map != null, "mini map area");
-            Require(map.Find("WalkableArea") != null, "mini map displays the walkable area");
+            Require(map.Find("WalkableArea") == null, "mini map focuses on POIs instead of the whole floor");
             float previousLegendY = float.PositiveInfinity;
             foreach (POI poi in pois.pois)
             {
@@ -104,6 +104,10 @@ public static class GardenValidate
                     "POI legend rows do not overlap");
                 previousLegendY = legend.anchoredPosition.y;
             }
+            var west = map.Find("POI_" + pois.pois[0].id).GetComponent<RectTransform>();
+            var east = map.Find("POI_" + pois.pois[2].id).GetComponent<RectTransform>();
+            Require(Mathf.Abs(east.anchoredPosition.x - west.anchoredPosition.x) > 80f,
+                "POI markers have room to show their positions");
             var arrow = map.Find("PlayerArrow").GetComponent<RectTransform>();
 
             camera.transform.rotation = Quaternion.identity;
@@ -116,6 +120,13 @@ public static class GardenValidate
             update.Invoke(miniMap, null);
             Require(arrow.anchoredPosition.x > initialPosition.x, "mini map player moves east");
             Require(Mathf.Abs(Mathf.DeltaAngle(arrow.localEulerAngles.z, 270f)) < 0.01f, "mini map arrow turns east");
+
+            camera.transform.position = originalPosition + Vector3.right * 50f;
+            update.Invoke(miniMap, null);
+            var mapStatus = panel.Find("MapDirection").GetComponent<TextMeshProUGUI>();
+            Require(mapStatus.text == "角色位于地图范围外" &&
+                arrow.anchoredPosition.x <= map.GetComponent<RectTransform>().sizeDelta.x * 0.5f,
+                "player outside scenic area is shown at map edge");
 
             POIManager.CurrentIndex = 1;
             update.Invoke(miniMap, null);

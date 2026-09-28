@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 路网示意小地图。读取场景中的路点和景点，屏幕上方对应 Unity 世界 +Z。
+/// 景点区域示意小地图。读取场景中的景点，屏幕上方对应 Unity 世界 +Z。
 /// 不依赖 Garden 的固定景点数量、名称或坐标。
 /// </summary>
 public class TourMiniMap : MonoBehaviour
@@ -12,7 +12,7 @@ public class TourMiniMap : MonoBehaviour
     [Header("场景数据")]
     public RouteGraph graph;
     public POIManager poiManager;
-    [Tooltip("可行走地板；留空时小地图使用路点和景点计算范围")]
+    [Tooltip("没有景点时用于确定地图范围；有景点时地图聚焦于景点区域")]
     public BoxCollider walkableFloor;
 
     [Header("窗口")]
@@ -37,6 +37,7 @@ public class TourMiniMap : MonoBehaviour
     float usableHalfSize;
     float legendHeight;
     int visiblePoiCount;
+    bool showWalkableFloor;
 
     void Start()
     {
@@ -101,22 +102,31 @@ public class TourMiniMap : MonoBehaviour
     {
         float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
         float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
-        Include(sceneCamera.transform.position, ref minX, ref maxX, ref minZ, ref maxZ);
+        if (poiManager.pois != null)
+            foreach (POI poi in poiManager.pois)
+                if (poi != null) Include(poi.position, ref minX, ref maxX, ref minZ, ref maxZ);
 
-        if (walkableFloor != null && walkableFloor.enabled)
+        bool hasPois = !float.IsInfinity(minX);
+        showWalkableFloor = !hasPois && walkableFloor != null && walkableFloor.enabled;
+        if (hasPois)
+        {
+            float scenicSpan = Mathf.Max(maxX - minX, maxZ - minZ);
+            float padding = Mathf.Max(3f, scenicSpan * 0.25f);
+            minX -= padding;
+            maxX += padding;
+            minZ -= padding;
+            maxZ += padding;
+        }
+        else if (showWalkableFloor)
         {
             Bounds floorBounds = walkableFloor.bounds;
             Include(floorBounds.min, ref minX, ref maxX, ref minZ, ref maxZ);
             Include(floorBounds.max, ref minX, ref maxX, ref minZ, ref maxZ);
         }
-
-        if (graph.nodes != null)
+        else if (graph.nodes != null)
             foreach (Transform node in graph.nodes)
                 if (node != null) Include(node.position, ref minX, ref maxX, ref minZ, ref maxZ);
-
-        if (poiManager.pois != null)
-            foreach (POI poi in poiManager.pois)
-                if (poi != null) Include(poi.position, ref minX, ref maxX, ref minZ, ref maxZ);
+        if (float.IsInfinity(minX)) Include(sceneCamera.transform.position, ref minX, ref maxX, ref minZ, ref maxZ);
 
         worldCenter = new Vector2((minX + maxX) * 0.5f, (minZ + maxZ) * 0.5f);
         float worldSpan = Mathf.Max(maxX - minX, maxZ - minZ, 1f);
@@ -126,7 +136,7 @@ public class TourMiniMap : MonoBehaviour
 
     void DrawWalkableFloor()
     {
-        if (walkableFloor == null || !walkableFloor.enabled) return;
+        if (!showWalkableFloor) return;
         Bounds bounds = walkableFloor.bounds;
         RectTransform area = CreateRect("WalkableArea", mapRect);
         area.anchorMin = area.anchorMax = new Vector2(0.5f, 0.5f);
