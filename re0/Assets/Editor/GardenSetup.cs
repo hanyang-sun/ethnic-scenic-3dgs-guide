@@ -107,6 +107,9 @@ public static class GardenSetup
         route.graph = graph;
         route.cameraHeight = EyeHeight;
         tour.GetComponent<LineRenderer>().positionCount = 0;
+        var miniMap = tour.AddComponent<TourMiniMap>();
+        miniMap.graph = graph;
+        miniMap.poiManager = pois;
 
         POIManager.CurrentIndex = -1;
         EditorSceneManager.MarkSceneDirty(scene);

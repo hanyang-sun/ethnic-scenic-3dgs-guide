@@ -874,6 +874,7 @@ GameObject:
   - component: {fileID: 199153993}
   - component: {fileID: 199153992}
   - component: {fileID: 199153991}
+  - component: {fileID: 199153989}
   m_Layer: 0
   m_Name: Garden Tour
   m_TagString: Untagged
@@ -899,6 +900,24 @@ MonoBehaviour:
   lineHeight: 0.12
   cameraHeight: 1.6
   refreshDistance: 0.5
+--- !u!114 &199153989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199153990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e8816446b9e4cddae31c750d4d13481, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::TourMiniMap
+  graph: {fileID: 199153998}
+  poiManager: {fileID: 199153997}
+  mapSize: 256
+  mapPadding: 28
+  rightMargin: 24
+  bottomMargin: 24
 --- !u!120 &199153992
 LineRenderer:
   serializedVersion: 3

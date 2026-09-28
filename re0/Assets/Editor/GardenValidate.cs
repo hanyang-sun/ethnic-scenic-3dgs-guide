@@ -18,12 +18,14 @@ public static class GardenValidate
         var graph = UnityEngine.Object.FindFirstObjectByType<RouteGraph>();
         var pois = UnityEngine.Object.FindFirstObjectByType<POIManager>();
         var route = UnityEngine.Object.FindFirstObjectByType<RouteLine>();
+        var miniMap = UnityEngine.Object.FindFirstObjectByType<TourMiniMap>();
         Require(camera != null && camera.GetComponent<CameraController>() != null && camera.GetComponent<CharacterController>() != null, "camera movement");
         Require(splat != null && splat.m_Asset != null && splat.m_Asset.splatCount == 1300000, "Garden splat asset");
         Require(splat.m_Asset.cameras != null && splat.m_Asset.cameras.Length == 185, "camera poses");
         Require(graph != null && graph.nodes.Length == 28 && graph.edges.Length == 28, "camera path graph");
         Require(pois != null && pois.pois.Count == 3, "three POIs");
         Require(route != null && route.graph == graph && route.GetComponent<LineRenderer>().positionCount == 0, "route renderer starts hidden");
+        Require(miniMap != null && miniMap.graph == graph && miniMap.poiManager == pois, "mini map data references");
         var chineseFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/NotoSansSC SDF.asset");
         Require(chineseFont != null, "Chinese UI font");
         Require(chineseFont.TryAddCharacters("景区导览", out string missingCharacters) && string.IsNullOrEmpty(missingCharacters), "Chinese UI glyphs");
@@ -40,9 +42,54 @@ public static class GardenValidate
         Require(floorHits == graph.nodes.Length, $"floor support at every route node ({floorHits}/{graph.nodes.Length})");
         Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<POILabel>().worldScale - 0.004f) < 0.0001f, "compact world labels");
         Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<DistanceHUD>().fontSize - 22f) < 0.01f, "compact HUD text");
+        ValidateMiniMap(camera, miniMap, pois);
         ValidateArrivalDismissal(camera, pois);
         EditorSceneManager.OpenScene("Assets/Scenes/GardenPrototype.unity", OpenSceneMode.Single);
-        Debug.Log("GARDEN_VALIDATE_OK: model, routes, 28 floor nodes, compact UI, close and re-entry behavior");
+        Debug.Log("GARDEN_VALIDATE_OK: model, routes, 28 floor nodes, mini map, compact UI, close and re-entry behavior");
+    }
+
+    static void ValidateMiniMap(Camera camera, TourMiniMap miniMap, POIManager pois)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        MethodInfo start = typeof(TourMiniMap).GetMethod("Start", flags);
+        MethodInfo update = typeof(TourMiniMap).GetMethod("LateUpdate", flags);
+        Require(start != null && update != null, "mini map lifecycle methods");
+        Vector3 originalPosition = camera.transform.position;
+        Quaternion originalRotation = camera.transform.rotation;
+        try
+        {
+            start.Invoke(miniMap, null);
+            var canvas = GameObject.Find("TourMiniMapCanvas");
+            Require(canvas != null, "mini map canvas");
+            var map = canvas.transform.Find("NavigationWindow/MapArea");
+            Require(map != null, "mini map area");
+            foreach (POI poi in pois.pois)
+                Require(map.Find("POI_" + poi.id) != null, "mini map marker for " + poi.name);
+            var arrow = map.Find("PlayerArrow").GetComponent<RectTransform>();
+
+            camera.transform.rotation = Quaternion.identity;
+            update.Invoke(miniMap, null);
+            Vector2 initialPosition = arrow.anchoredPosition;
+            Require(Mathf.Abs(Mathf.DeltaAngle(arrow.localEulerAngles.z, 0f)) < 0.01f, "mini map forward arrow");
+
+            camera.transform.position += Vector3.right * 0.5f;
+            camera.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            update.Invoke(miniMap, null);
+            Require(arrow.anchoredPosition.x > initialPosition.x, "mini map player moves east");
+            Require(Mathf.Abs(Mathf.DeltaAngle(arrow.localEulerAngles.z, 270f)) < 0.01f, "mini map arrow turns east");
+
+            POIManager.CurrentIndex = 1;
+            update.Invoke(miniMap, null);
+            var selected = map.Find("POI_" + pois.pois[1].id).GetComponent<Image>();
+            Require(selected.rectTransform.sizeDelta.x > 14f, "mini map selected POI highlight");
+        }
+        finally
+        {
+            camera.transform.SetPositionAndRotation(originalPosition, originalRotation);
+            POIManager.CurrentIndex = -1;
+            var canvas = GameObject.Find("TourMiniMapCanvas");
+            if (canvas != null) UnityEngine.Object.DestroyImmediate(canvas);
+        }
     }
 
     static void ValidateArrivalDismissal(Camera camera, POIManager pois)
