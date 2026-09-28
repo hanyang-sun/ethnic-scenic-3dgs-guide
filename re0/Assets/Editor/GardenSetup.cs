@@ -11,6 +11,9 @@ public static class GardenSetup
 {
     const string ScenePath = "Assets/Scenes/GardenPrototype.unity";
     const float EyeHeight = 1.6f;
+    const float BoundaryPadding = 0.5f;
+    const float TableRadius = 2.45f;
+    const float TableHeight = 2.4f;
 
     public static void BuildAndVerify()
     {
@@ -79,19 +82,7 @@ public static class GardenSetup
         graph.edges = Enumerable.Range(0, graph.nodes.Length)
             .Select(i => new RouteGraph.Edge { a = i, b = (i + 1) % graph.nodes.Length }).ToArray();
 
-        var colliders = new GameObject("Invisible walkway and perimeter colliders");
-        colliders.transform.SetParent(tour.transform);
-        for (int i = 0; i < graph.nodes.Length; i++)
-            MakeFloorSegment(colliders.transform, graph.nodes[i].position, graph.nodes[(i + 1) % graph.nodes.Length].position, i);
-        float averageFloor = graph.nodes.Average(n => n.position.y);
-        for (int i = 0; i < 32; i++)
-        {
-            float a = i * Mathf.PI * 2f / 32f, b = (i + 1) * Mathf.PI * 2f / 32f;
-            MakeWallSegment(colliders.transform, new Vector3(Mathf.Cos(a) * 2.45f, averageFloor, Mathf.Sin(a) * 2.45f),
-                new Vector3(Mathf.Cos(b) * 2.45f, averageFloor, Mathf.Sin(b) * 2.45f), $"Table boundary {i}");
-            MakeWallSegment(colliders.transform, new Vector3(Mathf.Cos(a) * 5.15f, averageFloor, Mathf.Sin(a) * 5.15f),
-                new Vector3(Mathf.Cos(b) * 5.15f, averageFloor, Mathf.Sin(b) * 5.15f), $"Reconstruction boundary {i}");
-        }
+        BoxCollider walkableFloor = CreateWalkableColliders(tour.transform, graph, splat);
 
         var pois = tour.AddComponent<POIManager>();
         pois.pois.Clear();
@@ -110,13 +101,36 @@ public static class GardenSetup
         var miniMap = tour.AddComponent<TourMiniMap>();
         miniMap.graph = graph;
         miniMap.poiManager = pois;
+        miniMap.walkableFloor = walkableFloor;
 
         POIManager.CurrentIndex = -1;
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new Exception("Could not save GardenPrototype scene.");
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         AssetDatabase.SaveAssets();
-        Debug.Log($"GARDEN_SCENE_OK {ScenePath} | 3 POIs, {graph.nodes.Length} route nodes, {colliders.transform.childCount} proxy colliders");
+        Debug.Log($"GARDEN_SCENE_OK {ScenePath} | 3 POIs, {graph.nodes.Length} route nodes, one floor and one table collider");
+    }
+
+    [MenuItem("Garden Prototype/3. Expand walkable area")]
+    public static void ExpandWalkableArea()
+    {
+        var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        var tour = GameObject.Find("Garden Tour");
+        if (tour == null) throw new Exception("Garden Tour was not found in GardenPrototype.");
+        var graph = tour.GetComponent<RouteGraph>();
+        var miniMap = tour.GetComponent<TourMiniMap>();
+        var splat = UnityEngine.Object.FindFirstObjectByType<GaussianSplatRenderer>();
+        if (graph == null || miniMap == null || splat == null || splat.m_Asset == null)
+            throw new Exception("GardenPrototype needs RouteGraph, TourMiniMap and the Garden 3DGS asset.");
+
+        var oldColliders = tour.transform.Find("Invisible walkway and perimeter colliders");
+        if (oldColliders != null) UnityEngine.Object.DestroyImmediate(oldColliders.gameObject);
+        oldColliders = tour.transform.Find("Walkable floor and table obstacle");
+        if (oldColliders != null) UnityEngine.Object.DestroyImmediate(oldColliders.gameObject);
+        miniMap.walkableFloor = CreateWalkableColliders(tour.transform, graph, splat);
+        EditorSceneManager.MarkSceneDirty(scene);
+        if (!EditorSceneManager.SaveScene(scene, ScenePath)) throw new Exception("Could not save GardenPrototype scene.");
+        Debug.Log($"GARDEN_WALKABLE_AREA_OK {ScenePath} | {miniMap.walkableFloor.size.x:F1} x {miniMap.walkableFloor.size.z:F1} floor, one table collider");
     }
 
     static Vector3 WalkPoint(Transform splat, GaussianSplatAsset.CameraInfo camera)
@@ -131,25 +145,48 @@ public static class GardenSetup
         });
     }
 
-    static void MakeFloorSegment(Transform parent, Vector3 a, Vector3 b, int index)
+    static BoxCollider CreateWalkableColliders(Transform tour, RouteGraph graph, GaussianSplatRenderer splat)
     {
-        Vector3 direction = b - a; direction.y = 0;
-        var go = new GameObject($"Walkway {index}");
-        go.transform.SetParent(parent);
-        go.transform.position = (a + b) * 0.5f + Vector3.down * 0.1f;
-        go.transform.rotation = Quaternion.LookRotation(direction);
-        var box = go.AddComponent<BoxCollider>();
-        box.size = new Vector3(2.7f, 0.2f, direction.magnitude + 0.6f);
+        if (graph.nodes == null || graph.nodes.Length == 0 || graph.nodes.Any(node => node == null))
+            throw new Exception("RouteGraph needs valid nodes to position the floor.");
+        float floorTop = graph.nodes.Min(node => node.position.y) - 0.05f;
+        Bounds modelBounds = GetSplatWorldBounds(splat.transform, splat.m_Asset);
+        var root = new GameObject("Walkable floor and table obstacle");
+        root.transform.SetParent(tour);
+
+        var floor = new GameObject("Walkable floor (resize Box Collider in Inspector)");
+        floor.transform.SetParent(root.transform);
+        floor.transform.position = new Vector3(modelBounds.center.x, floorTop - 0.1f, modelBounds.center.z);
+        var floorCollider = floor.AddComponent<BoxCollider>();
+        floorCollider.size = new Vector3(modelBounds.size.x + BoundaryPadding * 2f, 0.2f,
+            modelBounds.size.z + BoundaryPadding * 2f);
+
+        // The built-in cylinder mesh gives the round table one solid, invisible collider.
+        var table = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        table.name = "Table obstacle";
+        table.transform.SetParent(root.transform);
+        table.transform.position = new Vector3(0f, floorTop + TableHeight * 0.5f, 0f);
+        table.transform.localScale = new Vector3(TableRadius * 2f, TableHeight * 0.5f, TableRadius * 2f);
+        Mesh cylinderMesh = table.GetComponent<MeshFilter>().sharedMesh;
+        UnityEngine.Object.DestroyImmediate(table.GetComponent<CapsuleCollider>());
+        table.GetComponent<MeshRenderer>().enabled = false;
+        var tableCollider = table.AddComponent<MeshCollider>();
+        tableCollider.sharedMesh = cylinderMesh;
+        tableCollider.convex = true;
+        return floorCollider;
     }
 
-    static void MakeWallSegment(Transform parent, Vector3 a, Vector3 b, string name)
+    static Bounds GetSplatWorldBounds(Transform splatTransform, GaussianSplatAsset asset)
     {
-        Vector3 direction = b - a;
-        var go = new GameObject(name);
-        go.transform.SetParent(parent);
-        go.transform.position = (a + b) * 0.5f + Vector3.up * 0.5f;
-        go.transform.rotation = Quaternion.LookRotation(direction);
-        var box = go.AddComponent<BoxCollider>();
-        box.size = new Vector3(0.15f, 2.4f, direction.magnitude + 0.1f);
+        Vector3 min = asset.boundsMin, max = asset.boundsMax;
+        var bounds = new Bounds(splatTransform.TransformPoint(min), Vector3.zero);
+        for (int x = 0; x < 2; x++)
+        for (int y = 0; y < 2; y++)
+        for (int z = 0; z < 2; z++)
+            bounds.Encapsulate(splatTransform.TransformPoint(new Vector3(
+                x == 0 ? min.x : max.x,
+                y == 0 ? min.y : max.y,
+                z == 0 ? min.z : max.z)));
+        return bounds;
     }
 }

@@ -12,6 +12,8 @@ public class TourMiniMap : MonoBehaviour
     [Header("场景数据")]
     public RouteGraph graph;
     public POIManager poiManager;
+    [Tooltip("可行走地板；留空时小地图使用路点和景点计算范围")]
+    public BoxCollider walkableFloor;
 
     [Header("窗口")]
     public float mapSize = 256f;
@@ -46,6 +48,7 @@ public class TourMiniMap : MonoBehaviour
 
         CalculateBounds();
         BuildWindow();
+        DrawWalkableFloor();
         DrawRoads();
         DrawPOIs();
         BuildPlayerArrow();
@@ -93,6 +96,13 @@ public class TourMiniMap : MonoBehaviour
         float minZ = float.PositiveInfinity, maxZ = float.NegativeInfinity;
         Include(sceneCamera.transform.position, ref minX, ref maxX, ref minZ, ref maxZ);
 
+        if (walkableFloor != null && walkableFloor.enabled)
+        {
+            Bounds floorBounds = walkableFloor.bounds;
+            Include(floorBounds.min, ref minX, ref maxX, ref minZ, ref maxZ);
+            Include(floorBounds.max, ref minX, ref maxX, ref minZ, ref maxZ);
+        }
+
         if (graph.nodes != null)
             foreach (Transform node in graph.nodes)
                 if (node != null) Include(node.position, ref minX, ref maxX, ref minZ, ref maxZ);
@@ -105,6 +115,17 @@ public class TourMiniMap : MonoBehaviour
         float worldSpan = Mathf.Max(maxX - minX, maxZ - minZ, 1f);
         usableHalfSize = Mathf.Max(20f, mapSize * 0.5f - mapPadding);
         pixelsPerUnit = 2f * usableHalfSize / worldSpan;
+    }
+
+    void DrawWalkableFloor()
+    {
+        if (walkableFloor == null || !walkableFloor.enabled) return;
+        Bounds bounds = walkableFloor.bounds;
+        RectTransform area = CreateRect("WalkableArea", mapRect);
+        area.anchorMin = area.anchorMax = new Vector2(0.5f, 0.5f);
+        area.sizeDelta = new Vector2(bounds.size.x, bounds.size.z) * pixelsPerUnit;
+        area.anchoredPosition = MapPosition(bounds.center);
+        AddImage(area.gameObject, new Color(0.22f, 0.34f, 0.36f, 0.96f));
     }
 
     static void Include(Vector3 point, ref float minX, ref float maxX, ref float minZ, ref float maxZ)

@@ -8,6 +8,8 @@
 2. 在 Unity Hub 中安装 **Unity Editor 6000.3.24f1**，然后把本 `re0` 文件夹添加为项目。工程使用 URP 17.3.0；首次打开时 Unity 会导入资源和解析依赖，可能需要联网。
 3. 打开 `Assets/Scenes/GardenPrototype.unity`，点击 Play。按 `1`、`2`、`3` 选择景点，`0` 取消；`WASD` 移动，按住鼠标右键转向，`Shift` 加速。右下角小地图显示道路、景点和角色朝向；到达后用 `Esc` 或弹窗右上角的 `×` 关闭提示。
 
+场景里以一块覆盖 **整个 3DGS 模型包围盒** 的隐形地板承托漫游角色，桌子使用一个圆柱形代理碰撞体；原先的窄步道和内外圈墙已移除。要改变可走范围，在 Hierarchy 中找到 `Garden Tour/Walkable floor and table obstacle/Walkable floor (resize Box Collider in Inspector)`，调整它的 `Box Collider > Size`（X、Z）；小地图会读取地板范围。3DGS 包围盒包含场景外围散点，地板高度也是统一的，因此部分位置可能没有可靠的地面画面；现有路线引导仍沿 28 个路点形成的环线。
+
 3DGS 插件 1.1.1 已内置在 `Packages/org.nesnausk.gaussian-splatting`，无需修改本机绝对路径。Unity 生成的 `Library`、`Logs`、`Temp` 等目录不会提交。`SourceAssets/Garden` 与 `Assets` 同级，保存原始 PLY、相机位姿和来源信息；Unity Project 窗口只显示 `Assets` 等工程内容。
 
 ## 文档与素材

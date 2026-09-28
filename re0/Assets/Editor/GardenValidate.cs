@@ -26,6 +26,27 @@ public static class GardenValidate
         Require(pois != null && pois.pois.Count == 3, "three POIs");
         Require(route != null && route.graph == graph && route.GetComponent<LineRenderer>().positionCount == 0, "route renderer starts hidden");
         Require(miniMap != null && miniMap.graph == graph && miniMap.poiManager == pois, "mini map data references");
+        var colliderRoot = graph.transform.Find("Walkable floor and table obstacle");
+        Require(colliderRoot != null, "walkable area root");
+        var floor = colliderRoot.Find("Walkable floor (resize Box Collider in Inspector)")?.GetComponent<BoxCollider>();
+        var table = colliderRoot.Find("Table obstacle")?.GetComponent<MeshCollider>();
+        Require(floor != null && floor.enabled && floor.size.x > 0f && floor.size.z > 0f, "walkable floor");
+        Require(table != null && table.enabled && table.convex && table.sharedMesh != null, "single round table obstacle");
+        Require(colliderRoot.GetComponentsInChildren<Collider>().Length == 2, "only floor and table colliders");
+        Require(miniMap.walkableFloor == floor, "mini map uses the walkable floor bounds");
+        Vector3 modelMin = splat.m_Asset.boundsMin, modelMax = splat.m_Asset.boundsMax;
+        for (int x = 0; x < 2; x++)
+        for (int y = 0; y < 2; y++)
+        for (int z = 0; z < 2; z++)
+        {
+            Vector3 corner = splat.transform.TransformPoint(new Vector3(
+                x == 0 ? modelMin.x : modelMax.x,
+                y == 0 ? modelMin.y : modelMax.y,
+                z == 0 ? modelMin.z : modelMax.z));
+            Require(corner.x >= floor.bounds.min.x && corner.x <= floor.bounds.max.x &&
+                corner.z >= floor.bounds.min.z && corner.z <= floor.bounds.max.z,
+                "floor covers the transformed 3DGS model bounds");
+        }
         var chineseFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/NotoSansSC SDF.asset");
         Require(chineseFont != null, "Chinese UI font");
         Require(chineseFont.TryAddCharacters("景区导览", out string missingCharacters) && string.IsNullOrEmpty(missingCharacters), "Chinese UI glyphs");
@@ -40,12 +61,18 @@ public static class GardenValidate
         foreach (Transform node in graph.nodes)
             if (Physics.Raycast(node.position + Vector3.up, Vector3.down, out _, 2f)) floorHits++;
         Require(floorHits == graph.nodes.Length, $"floor support at every route node ({floorHits}/{graph.nodes.Length})");
+        Vector3 farWalkablePoint = floor.bounds.center + Vector3.right * (floor.bounds.extents.x * 0.8f) + Vector3.up;
+        Require(Physics.Raycast(farWalkablePoint, Vector3.down, out RaycastHit floorHit, 2f) && floorHit.collider == floor,
+            "floor support outside the former perimeter");
+        Vector3 tableApproach = table.bounds.center + Vector3.right * (table.bounds.extents.x + 1f);
+        Require(Physics.Raycast(tableApproach, Vector3.left, out RaycastHit tableHit, 2f) && tableHit.collider == table,
+            "table stops horizontal movement");
         Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<POILabel>().worldScale - 0.004f) < 0.0001f, "compact world labels");
         Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<DistanceHUD>().fontSize - 22f) < 0.01f, "compact HUD text");
         ValidateMiniMap(camera, miniMap, pois);
         ValidateArrivalDismissal(camera, pois);
         EditorSceneManager.OpenScene("Assets/Scenes/GardenPrototype.unity", OpenSceneMode.Single);
-        Debug.Log("GARDEN_VALIDATE_OK: model, routes, 28 floor nodes, mini map, compact UI, close and re-entry behavior");
+        Debug.Log("GARDEN_VALIDATE_OK: model, routes, large walkable floor, single table obstacle, mini map, compact UI, close and re-entry behavior");
     }
 
     static void ValidateMiniMap(Camera camera, TourMiniMap miniMap, POIManager pois)
@@ -63,6 +90,7 @@ public static class GardenValidate
             Require(canvas != null, "mini map canvas");
             var map = canvas.transform.Find("NavigationWindow/MapArea");
             Require(map != null, "mini map area");
+            Require(map.Find("WalkableArea") != null, "mini map displays the walkable area");
             foreach (POI poi in pois.pois)
                 Require(map.Find("POI_" + poi.id) != null, "mini map marker for " + poi.name);
             var arrow = map.Find("PlayerArrow").GetComponent<RectTransform>();
