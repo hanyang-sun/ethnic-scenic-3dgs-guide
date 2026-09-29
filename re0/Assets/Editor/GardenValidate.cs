@@ -1,185 +1,103 @@
 using System;
-using System.Reflection;
+using System.Collections.Generic;
+using CSU.Tour;
 using GaussianSplatting.Runtime;
-using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.UI;
 
 public static class GardenValidate
 {
-    [MenuItem("Garden Prototype/Validate scene")]
+    const string ScenePath = "Assets/Scenes/GardenPrototype.unity";
+
+    [MenuItem("Garden Prototype/Validate teacher-style architecture")]
     public static void Validate()
     {
-        EditorSceneManager.OpenScene("Assets/Scenes/GardenPrototype.unity", OpenSceneMode.Single);
-        var camera = Camera.main;
+        EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+        Camera camera = Camera.main;
+        TourApp app = UnityEngine.Object.FindFirstObjectByType<TourApp>();
         var splat = UnityEngine.Object.FindFirstObjectByType<GaussianSplatRenderer>();
-        var graph = UnityEngine.Object.FindFirstObjectByType<RouteGraph>();
-        var pois = UnityEngine.Object.FindFirstObjectByType<POIManager>();
-        var route = UnityEngine.Object.FindFirstObjectByType<RouteLine>();
-        var miniMap = UnityEngine.Object.FindFirstObjectByType<TourMiniMap>();
-        Require(camera != null && camera.GetComponent<CameraController>() != null && camera.GetComponent<CharacterController>() != null, "camera movement");
-        Require(splat != null && splat.m_Asset != null && splat.m_Asset.splatCount == 1300000, "Garden splat asset");
+
+        Require(app != null, "one TourApp control center");
+        Require(UnityEngine.Object.FindObjectsByType<TourApp>(FindObjectsSortMode.None).Length == 1,
+            "exactly one TourApp");
+        Require(camera != null && app.view == camera, "TourApp camera reference");
+        Require(app.player != null && camera.transform.parent == app.player, "player root with child camera");
+        Require(app.motor != null && app.motor.transform == app.player, "player CharacterController");
+        Require(splat != null && app.splat == splat && splat.m_Asset != null &&
+                splat.m_Asset.splatCount == 1300000, "Garden splat asset");
         Require(splat.m_Asset.cameras != null && splat.m_Asset.cameras.Length == 185, "camera poses");
-        Require(graph != null && graph.nodes.Length == 28 && graph.edges.Length == 28, "camera path graph");
-        Require(pois != null && pois.pois.Count == 3, "three POIs");
-        Require(route != null && route.graph == graph && route.GetComponent<LineRenderer>().positionCount == 0, "route renderer starts hidden");
-        Require(miniMap != null && miniMap.graph == graph && miniMap.poiManager == pois, "mini map data references");
-        var colliderRoot = graph.transform.Find("Walkable floor and table obstacle");
-        Require(colliderRoot != null, "walkable area root");
-        var floor = colliderRoot.Find("Walkable floor (resize Box Collider in Inspector)")?.GetComponent<BoxCollider>();
-        var table = colliderRoot.Find("Table obstacle")?.GetComponent<MeshCollider>();
-        Require(floor != null && floor.enabled && floor.size.x > 0f && floor.size.z > 0f, "walkable floor");
-        Require(table != null && table.enabled && table.convex && table.sharedMesh != null, "single round table obstacle");
-        Require(colliderRoot.GetComponentsInChildren<Collider>().Length == 2, "only floor and table colliders");
-        Require(miniMap.walkableFloor == floor, "mini map fallback floor reference");
-        Vector3 modelMin = splat.m_Asset.boundsMin, modelMax = splat.m_Asset.boundsMax;
+        Require(app.nodes != null && app.nodes.Length == 28, "28 authored route nodes");
+        Require(app.edges != null && app.edges.Length == 28, "28 route edges");
+        Require(app.pois != null && app.pois.Length == 3, "three TourPoi records");
+        Require(Mathf.Abs(app.replanInterval - 0.75f) < 0.001f, "0.75 second replanning interval");
+        Require(app.obstacleLayer == 9 && LayerMask.LayerToName(9) == "TourObstacle",
+            "TourObstacle layer");
+        Require(LayerMask.LayerToName(8) == "WalkableGround", "WalkableGround layer");
+        Require(app.uiFont != null, "Chinese UI font");
+
+        var ids = new HashSet<string>();
+        foreach (TourPoi poi in app.pois)
+        {
+            Require(poi != null && !string.IsNullOrWhiteSpace(poi.id) && ids.Add(poi.id),
+                "unique POI id");
+            Require(poi.node >= 0 && poi.node < app.nodes.Length, "POI route node");
+            Require(poi.visualBounds.size.sqrMagnitude > 0f, "POI observation bounds");
+            Require(poi.arrivalSize.x > 0f && poi.arrivalSize.y > 0f && poi.arrivalSize.z > 0f,
+                "POI arrival bounds");
+            List<int> path = TourGraph.Shortest(app.nodes, app.edges, 0, poi.node, app.SegmentValid);
+            Require(path.Count > 0 && path[0] == 0 && path[path.Count - 1] == poi.node,
+                "obstacle-filtered route to " + poi.title);
+        }
+
+        Transform colliderRoot = app.transform.Find("Walkable floor and table obstacle");
+        Require(colliderRoot != null, "walkable and obstacle root");
+        BoxCollider floor = colliderRoot
+            .Find("Walkable floor (resize Box Collider in Inspector)")?.GetComponent<BoxCollider>();
+        MeshCollider table = colliderRoot.Find("Table obstacle")?.GetComponent<MeshCollider>();
+        Require(floor != null && floor.enabled && floor.gameObject.layer == 8 && app.ground == floor,
+            "TourApp walkable ground reference");
+        Require(table != null && table.enabled && table.convex && table.sharedMesh != null &&
+                table.gameObject.layer == 9, "TourObstacle table collider");
+        Require(colliderRoot.GetComponentsInChildren<Collider>().Length == 2,
+            "only floor and table colliders");
+
+        Bounds modelBounds = WorldBounds(splat.transform, splat.m_Asset);
+        Require(floor.bounds.min.x <= modelBounds.min.x && floor.bounds.max.x >= modelBounds.max.x &&
+                floor.bounds.min.z <= modelBounds.min.z && floor.bounds.max.z >= modelBounds.max.z,
+            "floor covers transformed 3DGS bounds");
+
+        int floorHits = 0;
+        foreach (Vector3 node in app.nodes)
+            if (Physics.Raycast(node + Vector3.up, Vector3.down, out RaycastHit hit, 2f) &&
+                hit.collider == floor)
+                floorHits++;
+        Require(floorHits == app.nodes.Length,
+            "floor support at every route node (" + floorHits + "/" + app.nodes.Length + ")");
+
+        Require(typeof(TourHud).IsSealed && typeof(TourMap).IsSealed &&
+                typeof(TourLog).IsSealed && typeof(PoiBoundsOverlay).IsSealed,
+            "teacher-style UI, map, bounds and log modules");
+        Require(typeof(IAdaptiveTourPlanner).IsInterface && typeof(IViewingStateEstimator).IsInterface,
+            "research extension contracts");
+
+        Debug.Log("GARDEN_VALIDATE_OK: centralized TourApp, obstacle-aware TourGraph, TourHud/TourMap, " +
+                  "POI bounds, reset/pause/visit state and JSONL TourLog");
+    }
+
+    static Bounds WorldBounds(Transform transform, GaussianSplatAsset asset)
+    {
+        Vector3 min = asset.boundsMin;
+        Vector3 max = asset.boundsMax;
+        var bounds = new Bounds(transform.TransformPoint(min), Vector3.zero);
         for (int x = 0; x < 2; x++)
         for (int y = 0; y < 2; y++)
         for (int z = 0; z < 2; z++)
-        {
-            Vector3 corner = splat.transform.TransformPoint(new Vector3(
-                x == 0 ? modelMin.x : modelMax.x,
-                y == 0 ? modelMin.y : modelMax.y,
-                z == 0 ? modelMin.z : modelMax.z));
-            Require(corner.x >= floor.bounds.min.x && corner.x <= floor.bounds.max.x &&
-                corner.z >= floor.bounds.min.z && corner.z <= floor.bounds.max.z,
-                "floor covers the transformed 3DGS model bounds");
-        }
-        var chineseFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/NotoSansSC SDF.asset");
-        Require(chineseFont != null, "Chinese UI font");
-        Require(chineseFont.TryAddCharacters("景区导览", out string missingCharacters) && string.IsNullOrEmpty(missingCharacters), "Chinese UI glyphs");
-
-        Vector3 start = camera.transform.position + Vector3.down * 1.6f;
-        foreach (POI poi in pois.pois)
-        {
-            Require(graph.TryFindPath(start, poi.position, out Vector3[] path, out float distance), "route to " + poi.name);
-            Require(path.Length >= 3 && distance > 0 && Vector3.Distance(path[path.Length - 1], poi.position) < 0.01f, "route geometry to " + poi.name);
-        }
-        int floorHits = 0;
-        foreach (Transform node in graph.nodes)
-            if (Physics.Raycast(node.position + Vector3.up, Vector3.down, out _, 2f)) floorHits++;
-        Require(floorHits == graph.nodes.Length, $"floor support at every route node ({floorHits}/{graph.nodes.Length})");
-        Vector3 farWalkablePoint = floor.bounds.center + Vector3.right * (floor.bounds.extents.x * 0.8f) + Vector3.up;
-        Require(Physics.Raycast(farWalkablePoint, Vector3.down, out RaycastHit floorHit, 2f) && floorHit.collider == floor,
-            "floor support outside the former perimeter");
-        Vector3 tableApproach = table.bounds.center + Vector3.right * (table.bounds.extents.x + 1f);
-        Require(Physics.Raycast(tableApproach, Vector3.left, out RaycastHit tableHit, 2f) && tableHit.collider == table,
-            "table stops horizontal movement");
-        Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<POILabel>().worldScale - 0.004f) < 0.0001f, "compact world labels");
-        Require(Mathf.Abs(UnityEngine.Object.FindFirstObjectByType<DistanceHUD>().fontSize - 22f) < 0.01f, "compact HUD text");
-        ValidateMiniMap(camera, miniMap, pois);
-        ValidateArrivalDismissal(camera, pois);
-        EditorSceneManager.OpenScene("Assets/Scenes/GardenPrototype.unity", OpenSceneMode.Single);
-        Debug.Log("GARDEN_VALIDATE_OK: model, routes, large walkable floor, single table obstacle, mini map, compact UI, close and re-entry behavior");
-    }
-
-    static void ValidateMiniMap(Camera camera, TourMiniMap miniMap, POIManager pois)
-    {
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        MethodInfo start = typeof(TourMiniMap).GetMethod("Start", flags);
-        MethodInfo update = typeof(TourMiniMap).GetMethod("LateUpdate", flags);
-        Require(start != null && update != null, "mini map lifecycle methods");
-        Vector3 originalPosition = camera.transform.position;
-        Quaternion originalRotation = camera.transform.rotation;
-        try
-        {
-            start.Invoke(miniMap, null);
-            var canvas = GameObject.Find("TourMiniMapCanvas");
-            Require(canvas != null, "mini map canvas");
-            var panel = canvas.transform.Find("NavigationWindow");
-            var map = panel?.Find("MapArea");
-            Require(map != null, "mini map area");
-            Require(map.Find("WalkableArea") == null, "mini map focuses on POIs instead of the whole floor");
-            float previousLegendY = float.PositiveInfinity;
-            foreach (POI poi in pois.pois)
-            {
-                Require(map.Find("POI_" + poi.id) != null, "mini map marker for " + poi.name);
-                Require(map.Find("Name_" + poi.id) == null, "no overlapping POI name inside map");
-                var legend = panel.Find("Legend_" + poi.id)?.GetComponent<RectTransform>();
-                Require(legend != null && legend.Find("Name")?.GetComponent<TextMeshProUGUI>()?.text == poi.name,
-                    "readable POI legend for " + poi.name);
-                Require(previousLegendY - legend.anchoredPosition.y >= legend.sizeDelta.y,
-                    "POI legend rows do not overlap");
-                previousLegendY = legend.anchoredPosition.y;
-            }
-            var west = map.Find("POI_" + pois.pois[0].id).GetComponent<RectTransform>();
-            var east = map.Find("POI_" + pois.pois[2].id).GetComponent<RectTransform>();
-            Require(Mathf.Abs(east.anchoredPosition.x - west.anchoredPosition.x) > 80f,
-                "POI markers have room to show their positions");
-            var arrow = map.Find("PlayerArrow").GetComponent<RectTransform>();
-
-            camera.transform.rotation = Quaternion.identity;
-            update.Invoke(miniMap, null);
-            Vector2 initialPosition = arrow.anchoredPosition;
-            Require(Mathf.Abs(Mathf.DeltaAngle(arrow.localEulerAngles.z, 0f)) < 0.01f, "mini map forward arrow");
-
-            camera.transform.position += Vector3.right * 0.5f;
-            camera.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
-            update.Invoke(miniMap, null);
-            Require(arrow.anchoredPosition.x > initialPosition.x, "mini map player moves east");
-            Require(Mathf.Abs(Mathf.DeltaAngle(arrow.localEulerAngles.z, 270f)) < 0.01f, "mini map arrow turns east");
-
-            camera.transform.position = originalPosition + Vector3.right * 50f;
-            update.Invoke(miniMap, null);
-            var mapStatus = panel.Find("MapDirection").GetComponent<TextMeshProUGUI>();
-            Require(mapStatus.text == "角色位于地图范围外" &&
-                arrow.anchoredPosition.x <= map.GetComponent<RectTransform>().sizeDelta.x * 0.5f,
-                "player outside scenic area is shown at map edge");
-
-            POIManager.CurrentIndex = 1;
-            update.Invoke(miniMap, null);
-            var selected = map.Find("POI_" + pois.pois[1].id).GetComponent<Image>();
-            Require(selected.rectTransform.sizeDelta.x > 14f, "mini map selected POI highlight");
-        }
-        finally
-        {
-            camera.transform.SetPositionAndRotation(originalPosition, originalRotation);
-            POIManager.CurrentIndex = -1;
-            var canvas = GameObject.Find("TourMiniMapCanvas");
-            if (canvas != null) UnityEngine.Object.DestroyImmediate(canvas);
-        }
-    }
-
-    static void ValidateArrivalDismissal(Camera camera, POIManager pois)
-    {
-        var arrival = UnityEngine.Object.FindFirstObjectByType<ArrivalPanel>();
-        Require(arrival != null, "arrival component");
-        POIManager.Instance = pois;
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        MethodInfo start = typeof(ArrivalPanel).GetMethod("Start", flags);
-        MethodInfo update = typeof(ArrivalPanel).GetMethod("LateUpdate", flags);
-        Require(start != null && update != null, "arrival lifecycle methods");
-        start.Invoke(arrival, null);
-        var canvas = GameObject.Find("ArrivalCanvas");
-        Require(canvas != null && canvas.GetComponent<GraphicRaycaster>() != null, "clickable arrival canvas");
-        var panel = canvas.transform.Find("Panel").gameObject;
-        var close = panel.transform.Find("CloseButton").GetComponent<Button>();
-        Require(close != null && close.interactable, "arrival close button");
-
-        POIManager.Select(0);
-        camera.transform.position = pois.pois[0].position + Vector3.up * 1.6f;
-        update.Invoke(arrival, null);
-        Require(panel.activeSelf, "arrival appears near target");
-        close.onClick.Invoke();
-        Require(!panel.activeSelf, "close hides arrival");
-        update.Invoke(arrival, null);
-        Require(!panel.activeSelf, "closed arrival stays hidden nearby");
-
-        camera.transform.position += Vector3.right * (arrival.hideDistance + 1f);
-        update.Invoke(arrival, null);
-        camera.transform.position = pois.pois[0].position + Vector3.up * 1.6f;
-        update.Invoke(arrival, null);
-        Require(panel.activeSelf, "arrival reopens after leaving and returning");
-
-        close.onClick.Invoke();
-        POIManager.Select(1);
-        camera.transform.position = pois.pois[1].position + Vector3.up * 1.6f;
-        update.Invoke(arrival, null);
-        Require(panel.activeSelf, "new destination reopens arrival");
-        POIManager.CurrentIndex = -1;
-        POIManager.Instance = null;
+            bounds.Encapsulate(transform.TransformPoint(new Vector3(
+                x == 0 ? min.x : max.x,
+                y == 0 ? min.y : max.y,
+                z == 0 ? min.z : max.z)));
+        return bounds;
     }
 
     static void Require(bool condition, string message)

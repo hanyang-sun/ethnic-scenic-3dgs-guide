@@ -283,327 +283,47 @@ MonoBehaviour:
   m_GameObject: {fileID: 199153990}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e8816446b9e4cddae31c750d4d13481, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a1b2c3d4e5f67890123456789abcdef, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TourMiniMap
-  graph: {fileID: 199153998}
-  poiManager: {fileID: 199153997}
-  walkableFloor: {fileID: 1174561621}
-  mapSize: 256
-  mapPadding: 28
-  rightMargin: 24
-  bottomMargin: 24
---- !u!1 &199153990
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 199153999}
-  - component: {fileID: 199153998}
-  - component: {fileID: 199153997}
-  - component: {fileID: 199153996}
-  - component: {fileID: 199153995}
-  - component: {fileID: 199153994}
-  - component: {fileID: 199153993}
-  - component: {fileID: 199153992}
-  - component: {fileID: 199153991}
-  - component: {fileID: 199153989}
-  m_Layer: 0
-  m_Name: Garden Tour
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &199153991
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 284a34fe48292b443be7383cd55ce0ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RouteLine
-  graph: {fileID: 199153998}
-  lineWidth: 0.09
-  lineColor: {r: 0.1, g: 0.85, b: 0.9, a: 0.95}
-  lineHeight: 0.12
-  cameraHeight: 1.6
-  refreshDistance: 0.5
---- !u!120 &199153992
-LineRenderer:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 0
-  m_LightProbeUsage: 0
-  m_ReflectionProbeUsage: 0
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Positions: []
-  m_Parameters:
-    serializedVersion: 3
-    widthMultiplier: 1
-    widthCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    colorGradient:
-      serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
-      key2: {r: 0, g: 0, b: 0, a: 0}
-      key3: {r: 0, g: 0, b: 0, a: 0}
-      key4: {r: 0, g: 0, b: 0, a: 0}
-      key5: {r: 0, g: 0, b: 0, a: 0}
-      key6: {r: 0, g: 0, b: 0, a: 0}
-      key7: {r: 0, g: 0, b: 0, a: 0}
-      ctime0: 0
-      ctime1: 65535
-      ctime2: 0
-      ctime3: 0
-      ctime4: 0
-      ctime5: 0
-      ctime6: 0
-      ctime7: 0
-      atime0: 0
-      atime1: 65535
-      atime2: 0
-      atime3: 0
-      atime4: 0
-      atime5: 0
-      atime6: 0
-      atime7: 0
-      m_Mode: 0
-      m_ColorSpace: -1
-      m_NumColorKeys: 2
-      m_NumAlphaKeys: 2
-    numCornerVertices: 0
-    numCapVertices: 0
-    alignment: 0
-    textureMode: 0
-    textureScale: {x: 1, y: 1}
-    shadowBias: 0.5
-    generateLightingData: 0
-  m_UseWorldSpace: 1
-  m_Loop: 0
-  m_ApplyActiveColorSpace: 1
---- !u!114 &199153993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba91b34a080b624d87cb2903a9966e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArrivalPanel
-  showDistance: 2
-  hideDistance: 3
-  panelWidth: 520
-  panelHeight: 210
-  panelColor: {r: 1, g: 1, b: 1, a: 0.95}
-  titleColor: {r: 0.12, g: 0.22, b: 0.39, a: 1}
-  bodyColor: {r: 0.15, g: 0.15, b: 0.15, a: 1}
---- !u!114 &199153994
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9a16c93ad8bd4c4cacddf72dea7d2ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DistanceHUD
-  rightMargin: 32
-  topMargin: 28
-  width: 340
-  height: 60
-  textColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
-  fontSize: 22
---- !u!114 &199153995
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebad9fe155e19f4478671143e2f0d5ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DestinationSelector
-  buttonWidth: 176
-  buttonHeight: 40
-  leftMargin: 24
-  topMargin: 24
-  spacing: 8
-  normalColor: {r: 1, g: 1, b: 1, a: 0.9}
-  selectedColor: {r: 0.12, g: 0.22, b: 0.39, a: 0.95}
-  textColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
-  selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
---- !u!114 &199153996
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20d02a1481b053442891a32750061f62, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::POILabel
-  heightOffset: 1.4
-  worldScale: 0.004
-  constantScreenSize: 1
-  referenceDistance: 8
-  scaleLimits: {x: 0.75, y: 1.6}
-  textColor: {r: 0.1, g: 0.1, b: 0.1, a: 1}
-  backColor: {r: 1, g: 1, b: 1, a: 0.82}
-  fontSize: 32
-  maxVisibleDistance: 60
---- !u!114 &199153997
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45303a5ac7b41ab4ca7359c24b32c79c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::POIManager
-  pois:
-  - id: view_west
-    name: "\u897F\u4FA7\u89C2\u666F\u4F4D"
-    category: "\u89C2\u666F\u4F4D\u7F6E"
-    area: "Garden \u6280\u672F\u539F\u578B"
-    description: "\u4ECE\u897F\u4FA7\u89C2\u5BDF\u82B1\u56ED\u4E2D\u592E\u533A\u57DF\u3002"
-    position: {x: -3.7346203, y: -2.6757817, z: 0.7103697}
-    boundsSize: {x: 1.5, y: 1.5, z: 1.5}
-    viewpoints:
-    - {x: -3.7346203, y: -1.0757817, z: 0.7103697}
-  - id: view_north
-    name: "\u5317\u4FA7\u89C2\u666F\u4F4D"
-    category: "\u89C2\u666F\u4F4D\u7F6E"
-    area: "Garden \u6280\u672F\u539F\u578B"
-    description: "\u4ECE\u53E6\u4E00\u89D2\u5EA6\u89C2\u5BDF\u82B1\u56ED\u4E0E\u684C\u9762\u7EC6\u8282\u3002"
-    position: {x: 0.89117, y: -2.4608812, z: 4.0885034}
-    boundsSize: {x: 1.5, y: 1.5, z: 1.5}
-    viewpoints:
-    - {x: 0.89117, y: -0.8608812, z: 4.0885034}
-  - id: view_east
-    name: "\u4E1C\u4FA7\u89C2\u666F\u4F4D"
-    category: "\u89C2\u666F\u4F4D\u7F6E"
-    area: "Garden \u6280\u672F\u539F\u578B"
-    description: "\u6CBF\u73AF\u5F62\u8DEF\u7EBF\u5230\u8FBE\u4E1C\u4FA7\u89C2\u5BDF\u4F4D\u7F6E\u3002"
-    position: {x: 3.3589165, y: -2.6631985, z: -1.3551292}
-    boundsSize: {x: 1.5, y: 1.5, z: 1.5}
-    viewpoints:
-    - {x: 3.3589165, y: -1.0631984, z: -1.3551292}
---- !u!114 &199153998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 199153990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9a8b7d12c38c7846b274acc9ffa4ca1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RouteGraph
+  m_EditorClassIdentifier: Assembly-CSharp::CSU.Tour.TourApp
+  player: {fileID: 2100000001}
+  view: {fileID: 330585545}
+  motor: {fileID: 330585549}
+  splat: {fileID: 523404545}
+  ground: {fileID: 1174561621}
+  routeMaterial: {fileID: 0}
+  uiFont: {fileID: 11400000, guid: 07b36e79d4c371b4f9490f40df2fab01, type: 2}
+  startPosition: {x: -0.46281758, y: -2.8711987, z: -4.091032}
+  startYaw: 136.38443
   nodes:
-  - {fileID: 1759484448}
-  - {fileID: 169064647}
-  - {fileID: 1842464617}
-  - {fileID: 276736726}
-  - {fileID: 1933716871}
-  - {fileID: 1029398484}
-  - {fileID: 259933584}
-  - {fileID: 111980158}
-  - {fileID: 1153520333}
-  - {fileID: 20345920}
-  - {fileID: 1973393544}
-  - {fileID: 1693764467}
-  - {fileID: 1095801922}
-  - {fileID: 1344577333}
-  - {fileID: 332420431}
-  - {fileID: 984872536}
-  - {fileID: 432080030}
-  - {fileID: 126392304}
-  - {fileID: 1929078306}
-  - {fileID: 450306243}
-  - {fileID: 892693592}
-  - {fileID: 1011431913}
-  - {fileID: 642367929}
-  - {fileID: 250885925}
-  - {fileID: 1619869442}
-  - {fileID: 1986895616}
-  - {fileID: 193225249}
-  - {fileID: 525216552}
+  - {x: -0.46281758, y: -2.8711987, z: -4.091032}
+  - {x: -1.1916221, y: -2.8656845, z: -3.8499374}
+  - {x: -1.873833, y: -2.8213797, z: -3.4069116}
+  - {x: -2.4083745, y: -2.8204846, z: -3.0000224}
+  - {x: -2.9522982, y: -2.7879004, z: -2.306538}
+  - {x: -3.416663, y: -2.7597377, z: -1.6507137}
+  - {x: -3.6620638, y: -2.7228746, z: -0.8014227}
+  - {x: -3.7346203, y: -2.6757817, z: 0.7103697}
+  - {x: -3.5389712, y: -2.6456978, z: 1.31223}
+  - {x: -3.392609, y: -2.5879211, z: 2.0404217}
+  - {x: -3.062113, y: -2.5565605, z: 2.7205787}
+  - {x: -2.4759617, y: -2.551808, z: 3.1555932}
+  - {x: -1.7551479, y: -2.542548, z: 3.511696}
+  - {x: -1.168346, y: -2.4996514, z: 3.7192214}
+  - {x: 0.22123761, y: -2.4613853, z: 4.121029}
+  - {x: 0.89117, y: -2.4608812, z: 4.0885034}
+  - {x: 1.5227101, y: -2.4721925, z: 3.8590894}
+  - {x: 2.1079671, y: -2.4973037, z: 3.3917315}
+  - {x: 2.8986382, y: -2.5294783, z: 2.951518}
+  - {x: 3.2842755, y: -2.5447433, z: 2.3218443}
+  - {x: 3.6538713, y: -2.6027055, z: 1.5081917}
+  - {x: 3.5874264, y: -2.6036353, z: 0.17227674}
+  - {x: 3.522469, y: -2.616075, z: -0.5926005}
+  - {x: 3.3589165, y: -2.6631985, z: -1.3551292}
+  - {x: 3.0924933, y: -2.7210171, z: -2.1055646}
+  - {x: 2.7147775, y: -2.7362103, z: -2.7618864}
+  - {x: 2.3485632, y: -2.7575274, z: -3.3810875}
+  - {x: 1.8495076, y: -2.774889, z: -3.8926463}
   edges:
   - a: 0
     b: 1
@@ -661,6 +381,61 @@ MonoBehaviour:
     b: 27
   - a: 27
     b: 0
+  pois:
+  - id: view_west
+    title: "\u897F\u4FA7\u89C2\u666F\u4F4D"
+    category: "Garden \u6280\u672F\u539F\u578B"
+    description: "\u4ECE\u897F\u4FA7\u89C2\u5BDF\u82B1\u56ED\u4E2D\u592E\u533A\u57DF\u3002"
+    node: 7
+    visualBounds:
+      m_Center: {x: -3.7346203, y: -1.7757818, z: 0.7103697}
+      m_Extent: {x: 1.25, y: 0.9, z: 1.25}
+    arrivalOffset: {x: 0, y: 0.8, z: 0}
+    arrivalSize: {x: 2, y: 2, z: 2}
+  - id: view_north
+    title: "\u5317\u4FA7\u89C2\u666F\u4F4D"
+    category: "Garden \u6280\u672F\u539F\u578B"
+    description: "\u4ECE\u53E6\u4E00\u89D2\u5EA6\u89C2\u5BDF\u82B1\u56ED\u4E0E\u684C\u9762\u7EC6\u8282\u3002"
+    node: 15
+    visualBounds:
+      m_Center: {x: 0.89117, y: -1.5608811, z: 4.0885034}
+      m_Extent: {x: 1.25, y: 0.9, z: 1.25}
+    arrivalOffset: {x: 0, y: 0.8, z: 0}
+    arrivalSize: {x: 2, y: 2, z: 2}
+  - id: view_east
+    title: "\u4E1C\u4FA7\u89C2\u666F\u4F4D"
+    category: "Garden \u6280\u672F\u539F\u578B"
+    description: "\u6CBF\u73AF\u5F62\u8DEF\u7EBF\u5230\u8FBE\u4E1C\u4FA7\u89C2\u5BDF\u4F4D\u7F6E\u3002"
+    node: 23
+    visualBounds:
+      m_Center: {x: 3.3589165, y: -1.7631985, z: -1.3551292}
+      m_Extent: {x: 1.25, y: 0.9, z: 1.25}
+    arrivalOffset: {x: 0, y: 0.8, z: 0}
+    arrivalSize: {x: 2, y: 2, z: 2}
+  speed: 1.7
+  sprintMultiplier: 1.8
+  replanInterval: 0.75
+  obstacleLayer: 9
+  showPoiBounds: 0
+  showRoute: 1
+  paused: 0
+--- !u!1 &199153990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 199153999}
+  - component: {fileID: 199153989}
+  m_Layer: 0
+  m_Name: Tour - edit the settings here
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &199153999
 Transform:
   m_ObjectHideFlags: 0
@@ -771,6 +546,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1589189115}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2100000000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2100000001}
+  - component: {fileID: 330585549}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2100000001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2100000000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.9284354, z: 0, w: 0.371494}
+  m_LocalPosition: {x: -0.46281758, y: -2.8711987, z: -4.091032}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 330585546}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 136.38443, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,8 +591,6 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
-  - component: {fileID: 330585549}
-  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -859,13 +665,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.11429335, y: 0.9170231, z: -0.06709623, w: 0.3761698}
-  m_LocalPosition: {x: -2.439566, y: -0.36617708, z: 2.061606}
+  m_LocalRotation: {x: 0.06975647, y: 0, z: 0, w: 0.9975641}
+  m_LocalPosition: {x: 0, y: 1.65, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 2100000001}
+  m_LocalEulerAnglesHint: {x: 8, y: 0, z: 0}
 --- !u!114 &330585547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -910,31 +716,13 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &330585548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2001420c92023424aac46926bcc294a7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraController
-  moveSpeed: 1.7
-  boostMultiplier: 1.8
-  lookSensitivity: 2
-  useGravity: 1
-  gravity: -12
-  allowVerticalFly: 0
 --- !u!143 &330585549
 CharacterController:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
+  m_GameObject: {fileID: 2100000000}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -946,13 +734,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.6
+  m_Height: 1.65
   m_Radius: 0.25
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: -0.8, z: 0}
+  m_Center: {x: 0, y: 0.825, z: 0}
 --- !u!1 &332420430
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,7 +1278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1174561622}
   - component: {fileID: 1174561621}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Walkable floor (resize Box Collider in Inspector)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1578,7 +1366,7 @@ GameObject:
   - component: {fileID: 1283670213}
   - component: {fileID: 1283670212}
   - component: {fileID: 1283670211}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Table obstacle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2023,5 +1811,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 410087041}
   - {fileID: 523404546}
-  - {fileID: 330585546}
+  - {fileID: 2100000001}
   - {fileID: 199153999}
