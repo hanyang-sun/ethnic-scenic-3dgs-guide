@@ -22,6 +22,17 @@ namespace CSU.Tour
         public Material routeMaterial;
         public TMP_FontAsset uiFont;
 
+        [Header("场景标识与界面文案")]
+        public string sceneId = "garden_re0";
+        public string sceneTag = "GARDEN / 3DGS";
+        public string sceneTitle = "花园沉浸式导览";
+        public string sceneSubtitle = "TourApp 集中式运行框架";
+        public string SceneId => string.IsNullOrWhiteSpace(sceneId) ? "garden_re0" : sceneId;
+        public string SceneTag => string.IsNullOrWhiteSpace(sceneTag) ? "GARDEN / 3DGS" : sceneTag;
+        public string SceneTitle => string.IsNullOrWhiteSpace(sceneTitle) ? "花园沉浸式导览" : sceneTitle;
+        public string SceneSubtitle => string.IsNullOrWhiteSpace(sceneSubtitle)
+            ? "TourApp 集中式运行框架" : sceneSubtitle;
+
         [Header("出生点与人工路网（Unity 世界坐标）")]
         public Vector3 startPosition;
         public float startYaw;
@@ -95,7 +106,7 @@ namespace CSU.Tour
             Log.Write(
                 "session_start",
                 SystemInfo.graphicsDeviceName + " | " + SystemInfo.graphicsDeviceType +
-                " | scene=garden_re0 | path=graph_dijkstra_obstacle_filtered | arrival=body_in_box",
+                " | scene=" + SceneId + " | path=graph_dijkstra_obstacle_filtered | arrival=body_in_box",
                 view.transform);
 
             ResetTour();
@@ -264,11 +275,22 @@ namespace CSU.Tour
             route.Clear();
             if (Selected < 0) return false;
 
+            // 起点只能接入附近路网；否则无障碍时会直接连到目标节点，绕过整张路径图。
+            float nearestNodeDistance = float.PositiveInfinity;
+            var connectorDistances = new float[nodes.Length];
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                connectorDistances[i] = SegmentValid(player.position, nodes[i])
+                    ? Vector3.Distance(player.position, nodes[i])
+                    : float.PositiveInfinity;
+                nearestNodeDistance = Mathf.Min(nearestNodeDistance, connectorDistances[i]);
+            }
+
             float bestCost = float.PositiveInfinity;
             List<int> bestPath = null;
             for (int candidate = 0; candidate < nodes.Length; candidate++)
             {
-                if (!SegmentValid(player.position, nodes[candidate])) continue;
+                if (connectorDistances[candidate] > nearestNodeDistance + 0.75f) continue;
                 List<int> path = TourGraph.Shortest(nodes, edges, candidate, pois[Selected].node, SegmentValid);
                 if (path.Count == 0) continue;
 

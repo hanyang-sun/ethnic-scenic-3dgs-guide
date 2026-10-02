@@ -11,7 +11,7 @@ namespace CSU.Tour
         [Serializable]
         sealed class Settings
         {
-            public string scene_revision = "garden_re0_tour_app";
+            public string scene_revision;
             public string movement_mode = "planar_character_controller";
             public string model_name;
             public int splat_count;
@@ -40,7 +40,7 @@ namespace CSU.Tour
             public int route_revision;
             public string session_id;
             public string app_version;
-            public string scene_id = "garden_re0";
+            public string scene_id;
             public string coordinate_system = "Unity world; Y up; scene units";
             public string utc;
             public string type;
@@ -82,6 +82,7 @@ namespace CSU.Tour
             app = owner;
             configJson = JsonUtility.ToJson(new Settings
             {
+                scene_revision = app.SceneId + "_tour_app",
                 model_name = app.splat.m_Asset.name,
                 splat_count = app.splat.m_Asset.splatCount,
                 sh_order = app.splat.m_SHOrder,
@@ -123,6 +124,7 @@ namespace CSU.Tour
             {
                 var row = new Row
                 {
+                    scene_id = app.SceneId,
                     session_id = SessionId,
                     app_version = Application.version,
                     tour_index = app.TourIndex,

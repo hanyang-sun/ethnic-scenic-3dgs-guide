@@ -1,3 +1,6 @@
 SourceAssets/Garden/*.ply filter=lfs diff=lfs merge=lfs -text
 Assets/GaussianAssets/Garden/*.bytes filter=lfs diff=lfs merge=lfs -text
 Assets/Fonts/NotoSansSC-VF.ttf filter=lfs diff=lfs merge=lfs -text
+SourceAssets/WhiteArtGallery/*.ply filter=lfs diff=lfs merge=lfs -text
+Assets/GaussianAssets/WhiteArtGallery/*.bytes filter=lfs diff=lfs merge=lfs -text
+Docs/汇报材料/*.pptx filter=lfs diff=lfs merge=lfs -text

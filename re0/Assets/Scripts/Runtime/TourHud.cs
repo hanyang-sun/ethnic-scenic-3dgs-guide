@@ -69,10 +69,10 @@ namespace CSU.Tour
             RectTransform canvasRect = (RectTransform)root.transform;
             RectTransform title = Panel("Title", canvasRect, new Vector2(0f, 1f), new Vector2(0f, 1f),
                 new Vector2(24f, -24f), new Vector2(300f, 100f), PanelColor);
-            Label(title, "GARDEN / 3DGS", 14, Mint, new Rect(18, 10, 260, 22));
-            TextMeshProUGUI heading = Label(title, "花园沉浸式导览", 27, Ink, new Rect(18, 32, 265, 38));
+            Label(title, app.SceneTag, 14, Mint, new Rect(18, 10, 260, 22));
+            TextMeshProUGUI heading = Label(title, app.SceneTitle, 27, Ink, new Rect(18, 32, 265, 38));
             heading.fontStyle = FontStyles.Bold;
-            Label(title, "TourApp 集中式运行框架", 13, Muted, new Rect(18, 70, 265, 22));
+            Label(title, app.SceneSubtitle, 13, Muted, new Rect(18, 70, 265, 22));
 
             RectTransform helpButton = Panel("Help button", canvasRect, new Vector2(1f, 1f), new Vector2(1f, 1f),
                 new Vector2(-146f, -24f), new Vector2(110f, 42f), PanelColor);

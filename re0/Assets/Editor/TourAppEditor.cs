@@ -8,11 +8,38 @@ public sealed class TourAppEditor : UnityEditor.Editor
 {
     public override void OnInspectorGUI()
     {
+        var app = (TourApp)target;
+        int previousPoiCount = app.pois?.Length ?? 0;
+        var previousNodeIndices = new int[previousPoiCount];
+        for (int i = 0; i < previousPoiCount; i++)
+            previousNodeIndices[i] = app.pois[i]?.node ?? -1;
+
         EditorGUILayout.HelpBox(
             "集中式导览配置：POI、路网、玩家、UI 和日志均由 TourApp 统一管理。" +
-            "WalkableGround 使用 Layer 8，导航障碍使用 Layer 9。",
+            "WalkableGround 使用 Layer 8，导航障碍使用 Layer 9。" +
+            "修改 POI 的 Node 后，Visual Bounds 的 Center 会自动填入该节点坐标。",
             MessageType.Info);
         DrawDefaultInspector();
+
+        if (app.pois == null || app.nodes == null) return;
+        int undoGroup = Undo.GetCurrentGroup();
+        bool changed = false;
+        for (int i = 0; i < app.pois.Length; i++)
+        {
+            TourPoi poi = app.pois[i];
+            if (poi == null || poi.node < 0 || poi.node >= app.nodes.Length ||
+                (i < previousPoiCount && poi.node == previousNodeIndices[i])) continue;
+
+            if (!changed) Undo.RecordObject(app, "Set POI visual center from node");
+            Bounds bounds = poi.visualBounds;
+            bounds.center = app.nodes[poi.node];
+            poi.visualBounds = bounds;
+            changed = true;
+        }
+        if (!changed) return;
+        Undo.CollapseUndoOperations(undoGroup);
+        EditorUtility.SetDirty(app);
+        EditorSceneManager.MarkSceneDirty(app.gameObject.scene);
     }
 
     void OnSceneGUI()
