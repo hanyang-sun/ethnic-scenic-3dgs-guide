@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -25,6 +26,10 @@ namespace CSU.Tour
         TextMeshProUGUI pauseLabel;
         Button[] destinationButtons;
         TextMeshProUGUI[] destinationNames;
+        Button otherDestinationsButton;
+        TextMeshProUGUI otherDestinationsTitle;
+        TextMeshProUGUI otherDestinationsSummary;
+        RectTransform otherDestinationsMenu;
         TourMap map;
         RectTransform help;
 
@@ -110,24 +115,103 @@ namespace CSU.Tour
 
             destinationButtons = new Button[app.pois.Length];
             destinationNames = new TextMeshProUGUI[app.pois.Length];
+            int visibleCount = Mathf.Min(3, app.pois.Length);
+            int otherCount = app.pois.Length - visibleCount;
+            int slotCount = visibleCount + (otherCount > 0 ? 1 : 0);
             float availableWidth = 1392f;
             float gap = 12f;
-            float buttonWidth = (availableWidth - 36f - gap * Mathf.Max(0, app.pois.Length - 1)) /
-                                Mathf.Max(1, app.pois.Length);
-            for (int i = 0; i < app.pois.Length; i++)
+            float buttonWidth = (availableWidth - 36f - gap * Mathf.Max(0, slotCount - 1)) /
+                                Mathf.Max(1, slotCount);
+            for (int i = 0; i < visibleCount; i++)
             {
                 int captured = i;
                 RectTransform buttonRect = Panel("Destination " + i, tray, new Vector2(0f, 1f),
                     new Vector2(0f, 1f), new Vector2(18f + i * (buttonWidth + gap), -43f),
                     new Vector2(buttonWidth, 70f), Pale);
-                destinationButtons[i] = MakeButton(buttonRect, () => app.SelectPoi(captured));
+                destinationButtons[i] = MakeButton(buttonRect, () => SelectDestination(captured));
                 destinationNames[i] = Label(buttonRect, (i + 1) + "  " + app.pois[i].title,
                     16, Ink, new Rect(14, 8, buttonWidth - 28f, 27));
                 Label(buttonRect, app.pois[i].category, 13, Muted,
                     new Rect(14, 37, buttonWidth - 28f, 22));
             }
 
+            if (otherCount > 0)
+            {
+                RectTransform otherRect = Panel("Other destinations", tray, new Vector2(0f, 1f),
+                    new Vector2(0f, 1f), new Vector2(18f + visibleCount * (buttonWidth + gap), -43f),
+                    new Vector2(buttonWidth, 70f), Pale);
+                otherDestinationsButton = MakeButton(otherRect, ToggleOtherDestinations);
+                otherDestinationsTitle = Label(otherRect, "其他景点 ▾", 16, Ink,
+                    new Rect(14, 8, buttonWidth - 28f, 27));
+                otherDestinationsSummary = Label(otherRect, "还有 " + otherCount + " 个景点", 13, Muted,
+                    new Rect(14, 37, buttonWidth - 28f, 22));
+                BuildOtherDestinations(otherRect, visibleCount, otherCount, buttonWidth);
+            }
+
             BuildHelp(canvasRect);
+        }
+
+        void BuildOtherDestinations(RectTransform parent, int firstIndex, int count, float width)
+        {
+            const float rowHeight = 54f;
+            float menuHeight = Mathf.Min(312f, count * rowHeight + 12f);
+            otherDestinationsMenu = Panel("Other destinations menu", parent, new Vector2(0f, 1f),
+                new Vector2(0f, 0f), new Vector2(0f, 8f), new Vector2(width, menuHeight), PanelColor);
+
+            RectTransform viewport = Rect("Viewport", otherDestinationsMenu);
+            viewport.anchorMin = Vector2.zero;
+            viewport.anchorMax = Vector2.one;
+            viewport.offsetMin = new Vector2(6f, 6f);
+            viewport.offsetMax = new Vector2(-6f, -6f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+
+            RectTransform content = Rect("Content", viewport);
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = Vector2.one;
+            content.pivot = new Vector2(0.5f, 1f);
+            content.offsetMin = new Vector2(0f, -count * rowHeight);
+            content.offsetMax = Vector2.zero;
+
+            ScrollRect scroll = otherDestinationsMenu.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport;
+            scroll.content = content;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 28f;
+
+            for (int i = firstIndex; i < app.pois.Length; i++)
+            {
+                int captured = i;
+                RectTransform option = Panel("Destination " + i, content, new Vector2(0f, 1f),
+                    new Vector2(0f, 1f), new Vector2(0f, -(i - firstIndex) * rowHeight),
+                    new Vector2(width - 12f, 50f), Pale);
+                destinationButtons[i] = MakeButton(option, () => SelectDestination(captured));
+                destinationNames[i] = Label(option, (i + 1) + "  " + app.pois[i].title,
+                    16, Ink, new Rect(12f, 4f, width - 36f, 25f));
+                Label(option, app.pois[i].category, 13, Muted,
+                    new Rect(12f, 28f, width - 36f, 19f));
+            }
+
+            otherDestinationsMenu.gameObject.SetActive(false);
+        }
+
+        void SelectDestination(int index)
+        {
+            app.SelectPoi(index);
+            SetOtherDestinationsOpen(false);
+        }
+
+        void ToggleOtherDestinations()
+        {
+            SetOtherDestinationsOpen(!otherDestinationsMenu.gameObject.activeSelf);
+        }
+
+        void SetOtherDestinationsOpen(bool open)
+        {
+            if (otherDestinationsMenu == null) return;
+            otherDestinationsMenu.gameObject.SetActive(open);
+            otherDestinationsTitle.text = open ? "其他景点 ▴" : "其他景点 ▾";
         }
 
         void BuildHelp(RectTransform canvasRect)
@@ -176,6 +260,14 @@ namespace CSU.Tour
         void LateUpdate()
         {
             Refresh();
+            if (otherDestinationsMenu == null || !otherDestinationsMenu.gameObject.activeSelf ||
+                Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
+
+            Vector2 pointer = Mouse.current.position.ReadValue();
+            if (!RectTransformUtility.RectangleContainsScreenPoint(otherDestinationsMenu, pointer, canvas.worldCamera) &&
+                !RectTransformUtility.RectangleContainsScreenPoint(
+                    (RectTransform)otherDestinationsButton.transform, pointer, canvas.worldCamera))
+                SetOtherDestinationsOpen(false);
         }
 
         void Refresh()
@@ -194,6 +286,21 @@ namespace CSU.Tour
                 colors.selectedColor = colors.normalColor;
                 destinationButtons[i].colors = colors;
                 destinationNames[i].color = selected ? Color.white : Ink;
+            }
+
+            if (otherDestinationsButton != null)
+            {
+                bool selectedOther = app.Selected >= 3;
+                ColorBlock colors = otherDestinationsButton.colors;
+                colors.normalColor = selectedOther ? Mint : Pale;
+                colors.highlightedColor = selectedOther ? new Color(0.24f, 0.68f, 0.57f) : Color.white;
+                colors.selectedColor = colors.normalColor;
+                otherDestinationsButton.colors = colors;
+                otherDestinationsTitle.color = selectedOther ? Color.white : Ink;
+                otherDestinationsSummary.color = selectedOther ? Color.white : Muted;
+                otherDestinationsSummary.text = selectedOther
+                    ? app.pois[app.Selected].title
+                    : "还有 " + (app.pois.Length - 3) + " 个景点";
             }
 
             if (app.paused)
